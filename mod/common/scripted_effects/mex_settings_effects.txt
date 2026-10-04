@@ -1,0 +1,21 @@
+﻿# Root is the NEW player character. The engine supplies the old character scope.
+# Copy both enabled and disabled preferences; do not retain the new character's
+# stale values when the player switches to them or chooses a different destiny.
+mex_transfer_settings_effect = {
+    if = {
+        limit = {
+            exists = scope:previous_player_character
+            NOT = { this = scope:previous_player_character }
+        }
+        remove_variable = mex_hide_on_windows
+        remove_variable = mex_hide_all
+        if = {
+            limit = { scope:previous_player_character = { has_variable = mex_hide_on_windows } }
+            set_variable = mex_hide_on_windows
+        }
+        if = {
+            limit = { scope:previous_player_character = { has_variable = mex_hide_all } }
+            set_variable = mex_hide_all
+        }
+    }
+}

@@ -1,0 +1,12 @@
+/original_files/
+/original_mod/
+/documentation/
+/images/
+/.vscode/
+/.idea/
+/tools/__pycache__/
+/tools/*.py
+/dist/
+/tmp/
+/agents.md
+img*.png

@@ -1,0 +1,37 @@
+﻿# Messages extended. Preferences are saved on the player character.
+# The on_player_character_change hook transfers them to the actual new character.
+mex_hide_on_windows = {
+    scope = character
+    is_shown = { has_variable = mex_hide_on_windows }
+    effect = {
+        if = {
+            limit = { has_variable = mex_hide_on_windows }
+            remove_variable = mex_hide_on_windows
+        }
+        else = { set_variable = mex_hide_on_windows }
+    }
+}
+
+mex_hide_all = {
+    scope = character
+    is_shown = { has_variable = mex_hide_all }
+    effect = {
+        if = {
+            limit = { has_variable = mex_hide_all }
+            remove_variable = mex_hide_all
+        }
+        else = { set_variable = mex_hide_all }
+    }
+}
+
+# The shared HUD button opens settings normally and only restores when hidden.
+# An unconditional call is safe: showing an already-visible feed does nothing.
+mex_restore_messages = {
+    scope = character
+    effect = {
+        if = {
+            limit = { has_variable = mex_hide_all }
+            remove_variable = mex_hide_all
+        }
+    }
+}

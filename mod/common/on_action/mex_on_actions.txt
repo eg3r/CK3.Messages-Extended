@@ -1,0 +1,8 @@
+﻿# Append a callback without replacing the vanilla effect block.
+on_player_character_change = {
+    on_actions = { mex_player_settings_changed }
+}
+
+mex_player_settings_changed = {
+    effect = { mex_transfer_settings_effect = yes }
+}

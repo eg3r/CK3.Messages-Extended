@@ -1,0 +1,22 @@
+[h1]Messages extended[/h1]
+Convenient controls for CK3's bottom-right messages, keeping the game's current icons and styling.
+
+[h2]Added controls[/h2]
+[list]
+[*][b]Ctrl+right-click[/b] anywhere on a message: clear all messages.
+[*][b]Ctrl+Shift+M[/b]: toggle complete hiding of the message feed.
+[*][b]Broom button[/b] beside the list: clear all messages with one click.
+[/list]
+
+The button below the broom opens display settings. When messages are hidden, the [b]same button becomes a restore arrow[/b]. Settings let you hide messages while a right-side window is open or hide them completely. Hiding preserves messages; it does not clear them.
+
+[h2]Base-game controls still available[/h2]
+[list]
+[*][b]Ctrl+Shift+F[/b]: clear all messages.
+[*][b]M[/b]: open or close the game's Message Settings window.
+[*][b]Alt+F[/b], while viewing the Message Log: toggle its compact layout.
+[*][b]Right-click a message header[/b]: dismiss just that message.
+[*][b]Right-click a message's dismiss button[/b]: clear all messages.
+[/list]
+
+For CK3 [b]1.20.*[/b], localized in all nine game languages. Enable only one mod that replaces the message feed. These controls affect the bottom-right feed, not events or top-screen alerts.

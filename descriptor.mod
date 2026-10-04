@@ -1,0 +1,9 @@
+name="Messages-Extended"
+version="1.0.0"
+tags={
+    "Utilities"
+    "Graphics"
+}
+supported_version="1.20.*"
+picture="thumbnail.png"
+path="mod/MessagesExtended"

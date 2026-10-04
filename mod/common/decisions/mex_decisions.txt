@@ -1,0 +1,14 @@
+﻿# A fallback if the player cannot reach the restore arrow on the HUD.
+mex_show_messages_decision = {
+    decision_group_type = decisions
+    picture = {
+        reference = "gfx/interface/illustrations/decisions/decision_major_religion.dds"
+    }
+    ai_check_interval = 0
+    ai_potential = { always = no }
+    is_shown = {
+        is_ai = no
+        has_variable = mex_hide_all
+    }
+    effect = { remove_variable = mex_hide_all }
+}

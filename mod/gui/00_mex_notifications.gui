@@ -1,0 +1,581 @@
+﻿# Messages extended 1.0.0 -- CK3 1.20.0.3
+# GUI types use the first definition loaded. This filename must sort before
+# hud_notification_templates.gui so the vanilla type cannot win registration.
+# MEX: settings use declarative visibility; the shortcut stays outside the hidden feed.
+types Notifications {
+	type notifications_message_feed = flowcontainer {
+		name = "message_feed_widget"
+		visible = "[And(Not(IsObserver), And(Not(IsGameViewOpen('barbershop')), And(Not(IsPauseMenuShown), And(Not(SinglePlayerShowingPausedSuccession), IsDefaultGUIMode))))]"
+		visible_at_creation = no
+		parentanchor = bottom|right
+		alwaystransparent = yes
+		ignoreinvisible = yes
+		using = Animation_ShowHide_Quick
+
+		flowcontainer = {
+			name = "mex_messages_panel"
+			direction = vertical
+			ignoreinvisible = yes
+			visible = "[Or(GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), Not(And(GetScriptedGui('mex_hide_on_windows').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), IsRightWindowOpen)))]"
+
+			widget = {
+				name = "mex_controls_area"
+				size = { 517 105 }
+				minimumsize = { 517 105 }
+				maximumsize = { 517 -1 }
+				alwaystransparent = yes
+
+				# The flow sets this area's height, while its width stays 482 + 35. The popup
+				# below is a sibling, fully inside these bounds, and never resizes the flow.
+				flowcontainer = {
+					resizeparent = yes
+					direction = horizontal
+					ignoreinvisible = yes
+					# MEX_BEGIN_VANILLA_MESSAGE_WIDGET
+					widget = {
+						name = "mex_message_viewport"
+						visible = "[Not(GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End))]"
+						minimumsize = { 482 0 }
+						maximumsize = { 482 -1 }
+						size = { 482 0 }
+						state = {
+							name = _show
+							using = Animation_FadeIn_Standard
+						}
+						state = {
+							name = _hide
+							using = Animation_FadeOut_Quick
+						}
+						vbox = {
+							layoutpolicy_horizontal = expanding
+							layoutpolicy_vertical = expanding
+							set_parent_size_to_minimum = yes
+							expand = {}
+							scrollbox = {
+								layoutpolicy_horizontal = expanding
+								autoresizescrollarea = yes
+								max_height = "[Select_int32(IsRightWindowOpen, '(int32)282', '(int32)760')]"
+								alwaystransparent = yes
+								blockoverride "vertical_scrollbar_size" {
+									maximumsize = { -1 160 }
+								}
+								blockoverride "scrollbox_background" {}
+								blockoverride "scrollbox_background_fade" {}
+								blockoverride "scrollbox_replace_vbox" {
+									vbox = {
+										layoutpolicy_horizontal = expanding
+										parentanchor = bottom|hcenter
+										margin = { 10 5 }
+										vbox = {
+											name = "message_feed"
+											layoutpolicy_vertical = expanding
+											datamodel = "[MessageFeedHandler.GetItems]"
+											expand = {}
+											item = {
+												vbox = {
+													layoutpolicy_horizontal = expanding
+													datacontext = "[FeedMessageItem.GetPlayerMessageItem]"
+													spacing = -2
+													alwaystransparent = no
+													filter_mouse = left|right
+													state = {
+														name = "mark_to_delete"
+														trigger_when = "[FeedMessageItem.IsSetToDelete]"
+														on_start = "[FeedMessageItem.StartAnimation]"
+														on_finish = "[FeedMessageItem.EndAnimation]"
+														on_finish = "[FeedMessageItem.Delete]"
+														duration = 0.3
+														alpha = 0
+														using = Animation_Curve_Default
+													}
+													background = {
+														using = Background_Area_Dark
+													}
+													button = {
+														name = "header"
+														layoutpolicy_horizontal = expanding
+														size = { 0 32 }
+														onclick = "[FeedMessageItem.Expand]"
+														onrightclick = "[FeedMessageItem.MarkToDelete]"
+														button_ignore = none
+														tooltip = "mex_message_click_tooltip"
+														using = situation_entry_parent_hover_states
+														state = {
+															name = _mouse_hierarchy_enter
+															on_start = "[PdxGuiWidget.FindChild('button_dismiss_all').TriggerAnimation('hover_enter')]"
+														}
+														state = {
+															name = _mouse_hierarchy_leave
+															on_start = "[PdxGuiWidget.FindChild('button_dismiss_all').TriggerAnimation('hover_leave')]"
+														}
+														background = {
+															name = "neutral"
+															visible = "[PlayerMessageItem.GetType.IsNeutral]"
+															using = Feed_Message_Header
+														}
+														background = {
+															name = "good"
+															visible = "[PlayerMessageItem.GetType.IsGood]"
+															using = Feed_Message_Header
+															tintcolor = { 0.767708 0.78125 0.3479 0.847656 }
+														}
+														background = {
+															name = "bad"
+															visible = "[PlayerMessageItem.GetType.IsBad]"
+															using = Feed_Message_Header
+															tintcolor = { 0.949219 0.446105 0.330002 0.847656 }
+														}
+														hbox = {
+															margin_right = 10
+															margin_left = 5
+															spacing = 5
+															layoutpolicy_horizontal = expanding
+															icon = {
+																name = "message_type"
+																size = { 28 28 }
+																texture = "[PlayerMessageItem.GetType.GetIcon]"
+																tooltip = "[PlayerMessageItem.GetTooltip]"
+																using = tooltip_ws
+															}
+															text_single = {
+																name = "title"
+																text = "[PlayerMessageItem.GetTitle]"
+																using = Font_Size_Medium
+																align = nobaseline
+																max_width = 335
+																fontsize_min = 14
+															}
+															expand = {}
+															flowcontainer = {
+																name = "button_dismiss"
+																allow_outside = yes
+																alpha = 1
+																state = {
+																	name = hover_enter
+																	alpha = 0
+																	duration = 0.05
+																	using = Animation_Curve_Default
+																}
+																state = {
+																	name = hover_leave
+																	alpha = 1
+																	duration = 0.2
+																	using = Animation_Curve_Default
+																}
+																### MESSAGE DELIVERED DATE
+																widget = {
+																	allow_outside = yes
+																	text_single = {
+																		name = "date"
+																		fontsize_min = 14
+																		parentanchor = vcenter|left
+																		min_width = 60
+																		max_width = 60
+																		text = "[PlayerMessageItem.GetArrivalDate.GetStringShortNoYear]"
+																		align = right|nobaseline
+																	}
+																}
+															}
+															flowcontainer = {
+																name = "button_dismiss_all"
+																alpha = 0
+																state = {
+																	name = hover_enter
+																	alpha = 1
+																	duration = 0.05
+																	using = Animation_Curve_Default
+																}
+																state = {
+																	name = hover_leave
+																	alpha = 0
+																	duration = 0.2
+																	using = Animation_Curve_Default
+																}
+																### MESSAGE SETTINGS SHORTCUT
+																widget = {
+																	size = { 26 26 }
+																	allow_outside = yes
+																	button_menu = {
+																		size = { 26 26 }
+																		button_ignore = none
+																		onclick = "[ToggleGameViewData('message_settings', FeedMessageItem.GetPlayerMessageItem.GetType)]"
+																		tooltip = "MESSAGE_SETTINGS_WINDOW_SHORTCUT_TT"
+																		using = tooltip_se
+																	}
+																}
+																### MARK MESSAGE FOR DELETE
+																widget = {
+																	size = { 26 26 }
+																	allow_outside = yes
+																	button_clear = {
+																		size = { 26 26 }
+																		button_ignore = none
+																		onrightclick = "[MessageFeedHandler.MarkAllForDelete]"
+																		onclick = "[FeedMessageItem.MarkToDelete]"
+																		tooltip = "MESSAGE_CLEAR_ALL_TOOLTIP"
+																		using = tooltip_se
+																	}
+																}
+															}
+														}
+														button = {
+															name = "mex_ctrl_clear_header"
+															size = { 100% 100% }
+															visible = "[IsCtrlDown]"
+															button_ignore = left
+															filter_mouse = right
+															onrightclick = "[MessageFeedHandler.MarkAllForDelete]"
+															tooltip = "mex_ctrl_clear_tooltip"
+														}
+													}
+													widget = {
+														name = "message_feed_text_area"
+														layoutpolicy_horizontal = expanding
+														size = { 450 0 }
+														scissor = yes
+														state = {
+															name = "hide_text_1"
+															next = "hide_text_2"
+															trigger_when = "[FeedMessageItem.ShouldHide]"
+															duration = 0
+															size = { 450 160 }
+														}
+														state = {
+															name = "hide_text_2"
+															on_start = "[FeedMessageItem.StartAnimation]"
+															on_finish = "[FeedMessageItem.EndAnimation]"
+															on_finish = "[FeedMessageItem.ClickedHideFinished]"
+															size = { 450 0 }
+															using = Animation_FadeOut_Quick
+															duration = 0
+														}
+														state = {
+															name = "hide_text_clicked"
+															trigger_when = "[FeedMessageItem.ClickedHide]"
+															on_start = "[FeedMessageItem.StartAnimation]"
+															on_finish = "[FeedMessageItem.EndAnimation]"
+															on_finish = "[FeedMessageItem.ClickedHideFinished]"
+															size = { 450 0 }
+															using = Animation_FadeOut_Quick
+															duration = 0.15
+														}
+														state = {
+															name = "show_text_hidden"
+															trigger_when = "[Not(FeedMessageItem.IsExpanded)]"
+															duration = 0.15
+															size = { 450 0 }
+														}
+														state = {
+															name = "show_text_clicked"
+															trigger_when = "[FeedMessageItem.ClickedExpand]"
+															on_start = "[FeedMessageItem.StartAnimation]"
+															on_finish = "[FeedMessageItem.EndAnimation]"
+															on_finish = "[FeedMessageItem.ClickedExpandFinished]"
+															size = { 450 160 }
+															using = Animation_FadeIn_Standard
+															duration = 0.15
+														}
+														state = {
+															name = "show_text"
+															trigger_when = "[FeedMessageItem.ShouldShow]"
+															on_start = "[FeedMessageItem.StartAnimation]"
+															on_finish = "[FeedMessageItem.EndAnimation]"
+															on_finish = "[FeedMessageItem.ClickedExpandFinished]"
+															size = { 450 160 }
+															using = Animation_FadeIn_Standard
+															duration = 0.2
+														}
+														state = {
+															name = "show_text_expanded"
+															trigger_when = "[FeedMessageItem.IsExpanded]"
+															duration = 0
+															size = { 450 160 }
+														}
+														hbox = {
+															name = "text_and_icons"
+															margin_right = 10
+															state = {
+																name = appear
+																using = Animation_FadeIn_Quick
+																trigger_when = "[Or(FeedMessageItem.ClickedExpand, FeedMessageItem.ShouldShow)]"
+															}
+															state = {
+																name = disappear
+																using = Animation_FadeOut_Quick
+																trigger_when = "[FeedMessageItem.ShouldHide]"
+															}
+															text_multi = {
+																name = "text"
+																layoutpolicy_vertical = expanding
+																layoutpolicy_horizontal = expanding
+																margin = { 20 10 }
+																text = "[PlayerMessageItem.GetDescription]"
+																elide = right
+															}
+															vbox = {
+																layoutpolicy_vertical = expanding
+																margin_top = 5
+																margin_bottom = 15
+																hbox = {
+																	portrait_head_small = {
+																		name = "portrait_left"
+																		datacontext = "[PlayerMessageItem.GetLeftCharacter]"
+																		visible = "[Character.IsValid]"
+																	}
+																	coa_dynasty_medium = {
+																		name = "dynasty_left"
+																		datacontext = "[PlayerMessageItem.GetLeftDynasty]"
+																		visible = "[Dynasty.IsValid]"
+																	}
+																	coa_house_medium = {
+																		name = "house_left"
+																		datacontext = "[PlayerMessageItem.GetLeftHouse]"
+																		visible = "[DynastyHouse.IsValid]"
+																	}
+																	coa_title_medium = {
+																		name = "title_left"
+																		datacontext = "[PlayerMessageItem.GetLeftTitle]"
+																		visible = "[Title.IsValid]"
+																	}
+																	icon_artifact = {
+																		name = "artifact_left"
+																		datacontext = "[PlayerMessageItem.GetLeftArtifact]"
+																		visible = "[Artifact.IsValid]"
+																	}
+																	container_tenet_item_small = {
+																		name = "tenet_left"
+																		datacontext = "[PlayerMessageItem.GetLeftTenet]"
+																		datacontext = "[GetPlayer.GetRite]"
+																		visible = "[TenetType.IsValid]"
+																	}
+																	container_message_doctrine = {
+																		name = "doctrine_left"
+																		datacontext = "[PlayerMessageItem.GetLeftDoctrine]"
+																		visible = "[DoctrineType.IsValid]"
+																	}
+																	container_message_faith = {
+																		name = "faith_left"
+																		datacontext = "[PlayerMessageItem.GetLeftFaith]"
+																		visible = "[Faith.IsValid]"
+																	}
+																	container_message_rite = {
+																		name = "rite_left"
+																		datacontext = "[PlayerMessageItem.GetLeftRite]"
+																		visible = "[Rite.IsValid]"
+																	}
+																	portrait_head_small = {
+																		name = "portrait_right"
+																		datacontext = "[PlayerMessageItem.GetRightCharacter]"
+																		visible = "[Character.IsValid]"
+																	}
+																	coa_dynasty_medium = {
+																		name = "dynasty_right"
+																		datacontext = "[PlayerMessageItem.GetRightDynasty]"
+																		visible = "[Dynasty.IsValid]"
+																	}
+																	coa_house_medium = {
+																		name = "house_right"
+																		datacontext = "[PlayerMessageItem.GetRightHouse]"
+																		visible = "[DynastyHouse.IsValid]"
+																	}
+																	coa_title_medium = {
+																		name = "title_right"
+																		datacontext = "[PlayerMessageItem.GetRightTitle]"
+																		visible = "[Title.IsValid]"
+																	}
+																	icon_artifact = {
+																		name = "artifact_right"
+																		datacontext = "[PlayerMessageItem.GetRightArtifact]"
+																		visible = "[Artifact.IsValid]"
+																	}
+																	container_tenet_item_small = {
+																		name = "tenet_right"
+																		datacontext = "[PlayerMessageItem.GetRightTenet]"
+																		datacontext = "[GetPlayer.GetRite]"
+																		visible = "[TenetType.IsValid]"
+																	}
+																	container_message_doctrine = {
+																		name = "doctrine_right"
+																		datacontext = "[PlayerMessageItem.GetRightDoctrine]"
+																		visible = "[DoctrineType.IsValid]"
+																	}
+																	container_message_faith = {
+																		name = "faith_right"
+																		datacontext = "[PlayerMessageItem.GetRightFaith]"
+																		visible = "[Faith.IsValid]"
+																	}
+																	container_message_rite = {
+																		name = "rite_right"
+																		datacontext = "[PlayerMessageItem.GetRightRite]"
+																		visible = "[Rite.IsValid]"
+																	}
+																}
+																expand = {}
+															}
+														}
+														button = {
+															name = "mex_ctrl_clear_body"
+															size = { 100% 100% }
+															visible = "[IsCtrlDown]"
+															button_ignore = left
+															filter_mouse = right
+															onrightclick = "[MessageFeedHandler.MarkAllForDelete]"
+															tooltip = "mex_ctrl_clear_tooltip"
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					# MEX_END_VANILLA_MESSAGE_WIDGET
+
+					# Keep the same row width while the message viewport is hidden, without
+					# retaining the hidden list's height or moving the shared toolbar button.
+					widget = {
+						name = "mex_hidden_message_space"
+						visible = "[GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+						size = { 482 0 }
+						minimumsize = { 482 0 }
+						maximumsize = { 482 0 }
+						alwaystransparent = yes
+					}
+
+					# Reserve the toolbar's space without letting the flow position its buttons.
+					widget = {
+						name = "mex_toolbar_slot"
+						size = { 35 105 }
+						minimumsize = { 35 105 }
+						maximumsize = { 35 105 }
+						alwaystransparent = yes
+					}
+				}
+
+				widget = {
+					name = "mex_side_toolbar"
+					parentanchor = bottom|right
+					widgetanchor = bottom|right
+					size = { 35 105 }
+					minimumsize = { 35 105 }
+					maximumsize = { 35 105 }
+					button = {
+						parentanchor = top|right
+						widgetanchor = top|right
+						size = { 35 70 }
+						visible = "[Not(GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End))]"
+						enabled = "[Not(IsDataModelEmpty(AccessMessageFeedHandler.GetItems))]"
+						onclick = "[MessageFeedHandler.MarkAllForDelete]"
+						onrightclick = "[MessageFeedHandler.MarkAllForDelete]"
+						button_ignore = none
+						tooltip = "mex_clear_messages_tooltip"
+						background = { using = Background_Area_Dark }
+						button_clear = {
+							alwaystransparent = yes
+							parentanchor = center
+						}
+					}
+					button = {
+						name = "mex_settings_or_restore"
+						parentanchor = bottom|right
+						widgetanchor = bottom|right
+						size = { 35 33 }
+						onclick = "[GetVariableSystem.Toggle('mex_settings_open')]"
+						onclick = "[GetVariableSystem.ClearIf('mex_settings_open', GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End))]"
+						onclick = "[GetScriptedGui('mex_restore_messages').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+						tooltip = "[SelectLocalization(GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), 'mex_restore_messages_tooltip', 'mex_settings_tooltip')]"
+						background = { using = Background_Area_Dark }
+						button_menu = {
+							visible = "[Not(GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End))]"
+							alwaystransparent = yes
+							parentanchor = center
+						}
+						button_icon = {
+							visible = "[GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+							size = { 20 30 }
+							texture = "gfx/interface/icons/flat_icons/button_list_arrow.dds"
+							parentanchor = center
+							mirror = horizontal
+							alwaystransparent = yes
+						}
+					}
+				}
+
+				# Keep the entire popup inside its parent's mouse-input bounds. Its right edge
+				# sits 8px to the left of the 35px toolbar, with neither control being moved.
+				flowcontainer = {
+					name = "mex_settings_menu"
+					visible = "[And(Not(GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)), GetVariableSystem.Exists('mex_settings_open'))]"
+					parentanchor = bottom|right
+					widgetanchor = bottom|right
+					position = { -43 0 }
+					direction = vertical
+					ignoreinvisible = yes
+					alwaystransparent = no
+					filter_mouse = all
+					margin = { 5 5 }
+					background = { using = Background_Area_Dark }
+					button_checkbox_label = {
+						size = { 410 32 }
+						onclick = "[GetScriptedGui('mex_hide_on_windows').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+						blockoverride "text" {
+							text = "mex_hide_on_windows"
+							tooltip = "mex_hide_on_windows_tooltip"
+						}
+						blockoverride "checkbox" {
+							checked = "[GetScriptedGui('mex_hide_on_windows').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+						}
+					}
+					button_checkbox_label = {
+						size = { 410 32 }
+						onclick = "[GetScriptedGui('mex_hide_all').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+						onclick = "[GetVariableSystem.Clear('mex_settings_open')]"
+						blockoverride "text" {
+							text = "mex_hide_all"
+							tooltip = "mex_hide_all_tooltip"
+						}
+						blockoverride "checkbox" {
+							checked = "[GetScriptedGui('mex_hide_all').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+						}
+					}
+				}
+			}
+
+			widget = {
+				name = "push_up"
+				size = { 0 80 }
+				visible = "[Not(IsRightWindowOpen)]"
+			}
+		}
+
+		widget = {
+			name = "push_left"
+			size = { 630 0 }
+			visible = "[IsRightWindowOpen]"
+		}
+		# MEX: Ctrl+Shift+F; never reuse the army/siege F shortcut.
+		# This is a keyboard target, not a column in the surrounding flow layout.
+		button = {
+			size = { 0 0 }
+			minimumsize = { 0 0 }
+			maximumsize = { 0 0 }
+			onclick = "[MessageFeedHandler.MarkAllForDelete]"
+			shortcut = dismiss_all_notifications
+		}
+
+		# Global HUD toggle remains active when either message panel is hidden.
+		# Reuse vanilla's unassigned Ctrl+Shift+M binding without overriding shortcuts.
+		button = {
+			name = "mex_toggle_messages_shortcut"
+			size = { 0 0 }
+			minimumsize = { 0 0 }
+			maximumsize = { 0 0 }
+			onclick = "[GetScriptedGui('mex_hide_all').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+			onclick = "[GetVariableSystem.Clear('mex_settings_open')]"
+			shortcut = _ctrl_shift_m
+			tooltip = "mex_toggle_messages_shortcut"
+		}
+	}
+}
